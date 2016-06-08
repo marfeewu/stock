@@ -36,7 +36,6 @@ def checkTableisExist(table_name):
     data = curs.fetchall()
     return data
 
-
 '''-----------create start-----------'''
 
 def createTable_DailyQuotes():
@@ -69,12 +68,46 @@ def createTable_DailyQuotes():
         if conn:
             conn.close()
 
-def createTable_stockIndustryType():
+def createTable_stockMaster():
+    conn = connectDB()
+    curs = conn.cursor()
+    try:
+        curs.execute('''CREATE TABLE 'stockMaster' (
+                        'stockid' TEXT,
+                        'stockname' TEXT,
+                        'categorytypeid' INTEGER,
+                        'stockindustrytypeid' INTEGER,
+                         PRIMARY KEY(stockid))''')
+    except Exception:
+        dblog.error(sys.exc_info())
+        dblog.error(traceback.print_exc())
+    finally:
+        if conn:
+            conn.close()
+
+def createTable_stockCategoryType():
     conn = connectDB()
     curs = conn.cursor()
     try:
         curs.execute('''CREATE TABLE stockCategoryType (
-                    categorytypename TEXT)''')
+                    categorytypename TEXT,
+                    categorytypeid INTEGER)''')
+    except Exception:
+        dblog.error(sys.exc_info())
+        dblog.error(traceback.print_exc())
+    finally:
+        if conn:
+            conn.close()
+
+
+def createTable_stockIndustryType():
+    conn = connectDB()
+    curs = conn.cursor()
+    try:
+        curs.execute('''CREATE TABLE stockIndustryType (
+                    industryname TEXT,
+                    industrytypeid INTEGER,
+                    stockcategorytypeid INTEGER)''')
     except Exception:
         dblog.error(sys.exc_info())
         dblog.error(traceback.print_exc())
@@ -132,6 +165,17 @@ def queryDailyQuites():
     curs.execute('''select * from DailyQuotes''')
     row = curs.fetchall()
 
+
+def qStockCategoryType(value):
+    conn = connectDB()
+    curs = conn.cursor()
+    curs.execute('''select * from stockCategoryType
+                    where categorytypeid = ?''',(value[1],))
+    if len(curs.fetchall()) == 0:
+        return False
+    else:
+        dblog.info('已有重覆紀錄：' + str(value[0]))
+        return True
 
 def qStockIndustryType(value):
     conn = connectDB()
@@ -279,13 +323,15 @@ def qGetPeriodHistoryClosePriceByStockNo(value,period=365):
 
 
 def insertDailyQuotes(record):
+
+    if checkTableisExist('dailyQuotes'):
+        pass
+    else:
+        createTable_DailyQuotes()
+
     conn = connectDB()
     curs = conn.cursor()
 
-    '''    if checkTableisExist('dailyQuotes'):
-        pass
-    else:
-        createTable_DailyQuotes()'''
     try:
         trecord = tuple(record)
         curs.execute('''insert into DailyQuotes values
@@ -300,12 +346,14 @@ def insertDailyQuotes(record):
             conn.close()
 
 def insertSimpleDailyQuotes(record):
-    conn = connectDB()
-    curs = conn.cursor()
+
     if checkTableisExist('simpledailyquotes'):
         pass
     else:
         createTable_simpledailyquotes()
+    conn = connectDB()
+    curs = conn.cursor()
+
     try:
         trecord = tuple(record)
         curs.execute('''insert into simpledailyquotes values
@@ -320,27 +368,44 @@ def insertSimpleDailyQuotes(record):
             conn.close()
 
 
+# def insertStock(record):
+#     conn = connectDB()
+#     curs = conn.cursor()
+#     if checkTableisExist('dailyQuotes'):
+#         pass
+#     else:
+#         createTable_DailyQuotes()
+#     try:
+#         trecord = tuple(record)
+#         curs.execute('''insert into DailyQuotes values
+#             (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', trecord)
+#         conn.commit()
+#         dblog.info('建立資料成功：' + str(record))
+#     except Exception as e:
+#         conn.rollback()
+#         dblog.error(sys.exc_info())
+#         dblog.error(traceback.print_exc())
+#     finally:
+#         if conn:
+#             conn.close()
 
-def insertStock(record):
+
+def insertStockCategoryType(record):
     conn = connectDB()
     curs = conn.cursor()
-    if checkTableisExist('dailyQuotes'):
-        pass
-    else:
-        createTable_DailyQuotes()
     try:
-        trecord = tuple(record)
-        curs.execute('''insert into DailyQuotes values
-            (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', trecord)
+        curs.execute('''insert into stockCategoryType values
+            (?,?)''', record)
         conn.commit()
         dblog.info('建立資料成功：' + str(record))
-    except Exception as e:
+    except Exception:
         conn.rollback()
         dblog.error(sys.exc_info())
         dblog.error(traceback.print_exc())
     finally:
         if conn:
             conn.close()
+
 
 def insertStockIndustryType(record):
     conn = connectDB()
@@ -359,6 +424,12 @@ def insertStockIndustryType(record):
             conn.close()
 
 def inserStockMaster(record):
+
+    if checkTableisExist('stockMaster'):
+        pass
+    else:
+        createTable_stockMaster()
+
     conn = connectDB()
     curs = conn.cursor()
     trecord = tuple(record)
@@ -397,12 +468,15 @@ def insertStockHolderList(record):
 
 
 def insertanalysisData(record):
-    conn = connectDB()
-    curs = conn.cursor()
+
     if checkTableisExist('analysisdata'):
         pass
     else:
         createTable_analysisdata()
+
+    conn = connectDB()
+    curs = conn.cursor()
+
     try:
         for x in record:
             qrecord = (x[0],x[1],x[2],x[3])
