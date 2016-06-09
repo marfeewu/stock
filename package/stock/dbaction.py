@@ -119,7 +119,7 @@ def createTable_simpledailyquotes():
     conn = connectDB()
     curs = conn.cursor()
     try:
-        curs.execute('''CREATE TABLE simpledailyquoates (
+        curs.execute('''CREATE TABLE simpledailyquotes (
                         stockdate TEXT,
                         stockid   INTEGER,
                         tradingvolume INTEGER,
@@ -213,7 +213,7 @@ def qGetAllStockByCategoryType(value):
     trecord = [value,]
     curs.execute('''select a.stockid from stockMaster as a
                     inner join stockCategoryType as c
-                    on a.stockcategoryTypeid = c.categoryTypeid
+                    on a.stockindustrytypeid = c.categoryTypeid
                     where c.categorytypeid = ? ''',trecord)
     row = curs.fetchall()
     for i in row :
