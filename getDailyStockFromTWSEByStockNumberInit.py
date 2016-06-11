@@ -43,6 +43,7 @@ def main():
     to_date = from_date + relativedelta(years=0-int(cfg['quotedatarange']['duration']))
     try:
         for x in stockidlist :
+            print ("stockidlist", x, "from_date", from_date, "to_date", to_date)
             data.append(stockparser.getStockCSVDataByStockNo(x,from_date,to_date))
     except :
         error_code = 1

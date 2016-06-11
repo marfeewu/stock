@@ -136,7 +136,7 @@ def main():
                     text = t.text.strip()
                     s = text.split(' ')
                     industryid = dbaction.qStockIndustryIdByName(stockcat)
-                    tmplist = (s[0], s[1], tse,industryid)
+                    tmplist = (s[0], s[1], tse, industryid)
                     stock_tmp.append(tmplist)
                 else:
                     print('NoneType')

@@ -211,10 +211,8 @@ def qGetAllStockByCategoryType(value):
     curs = conn.cursor()
     data = []
     trecord = [value,]
-    curs.execute('''select a.stockid from stockMaster as a
-                    inner join stockCategoryType as c
-                    on a.stockindustrytypeid = c.categoryTypeid
-                    where c.categorytypeid = ? ''',trecord)
+    curs.execute('''select stockid from stockMaster
+                    where categorytypeid = ? ''',trecord)
     row = curs.fetchall()
     for i in row :
         data.append(str(i[0]))
@@ -303,6 +301,22 @@ def qGetLastDateDataByStockId(value):
         lastdate = datetime.datetime.strptime(lastdate_str,'%Y%m%d %H:%M:%S').date()
         return lastdate
 
+def qGetLastDateDataByStockId_min(value):
+    conn = connectDB()
+    curs = conn.cursor()
+    trecord = [value, ]
+    curs.execute('''
+    select min(stockdate) from simpledailyquotes
+    where stockid = ?''',trecord)
+    row = curs.fetchall()
+    if row[0][0] is None:
+        return None
+    else:
+        lastdate_tmp = row[0][0].split(sep='/')
+        lastdate_str = str(int(lastdate_tmp[0])+1911) +str(lastdate_tmp[1]) + str(lastdate_tmp[2]) +' 00:00:00'
+        lastdate = datetime.datetime.strptime(lastdate_str,'%Y%m%d %H:%M:%S').date()
+        return lastdate
+
 def qGetPeriodHistoryClosePriceByStockNo(value,period=365):
     conn = connectDB()
     curs = conn.cursor()
@@ -356,9 +370,9 @@ def insertSimpleDailyQuotes(record):
 
     try:
         trecord = tuple(record)
-        curs.execute('''insert into simpledailyquotes values
-            (?,?,?,?,?,?,?,?)''', trecord)
-        conn.commit()
+        if curs.execute('''insert into simpledailyquotes values
+            (?,?,?,?,?,?,?,?)''', trecord):
+            conn.commit()
         dblog.info('建立資料成功(simpledailyquotes)：' + str(record))
     except Exception:
         dblog.error(sys.exc_info())

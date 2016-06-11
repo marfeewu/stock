@@ -40,6 +40,7 @@ def main():
     try:
         for x in stockidlist:
             to_date = dbaction.qGetLastDateDataByStockId(x)
+            print ("stockparser:", x, "from_date", from_date, "to_date", to_date)
             data.append(stockparser.getLastestStockCSVDataByStockNo(x, from_date, to_date))
     except:
         error_code = 1
