@@ -46,22 +46,32 @@ def getStockDataByStockNo(stock_no,from_date,to_date):
                 print ("404 error stock_no:", stock_no,"from_data:", from_date,"to_date", to_date)
                 plog.info("url: %s" % url)
                 plog.info("404 error stock_no: %s from_data: %s to_date: %s" % (stock_no, from_date, to_date))
-                return None
+                return False
             #---
 
         #---allen
         try:
-            html = response.read().decode('big5')
+            #html = response.read().decode('big5')
+            if response.info().get('Content-Encoding') == 'gzip':
+                buf = io.BytesIO(response.read())
+                gzip_f = gzip.GzipFile(fileobj=buf)
+                html = gzip_f.read().decode('cp950')
+            else:
+                html = response.read().decode('cp950')
         except UnicodeDecodeError:
             print("url:", url)
             print ("decode error stock_no:", stock_no,"from_data:", from_date,"to_date", to_date)
             plog.info("url: %s" % url)
             plog.info("decode error stock_no: %s from_data: %s to_date: %s" % (stock_no, from_date, to_date))
-            return None
+            return False
         #---
 
-        code = html.encode('big5')
+        code = html.encode('cp950')
         htmldata = etree.HTML(code)
+
+        #code = html.encode('big5')
+        #htmldata = etree.HTML(code)
+
         stockdata= htmldata.xpath(u"//table[contains(@class,'board_trad')]/tr[contains(@bgcolor,'#FFFFFF')]/td")
         datedata = htmldata.xpath(u"//table[contains(@class,'board_trad')]/tr[contains(@bgcolor,'#FFFFFF')]/td[1]/div")
         p = 0
@@ -95,7 +105,7 @@ def main():
         #plog.info("stockidlist: %s from_data: %s to_date: %s" % (x, from_date, to_date))
         data = getStockDataByStockNo(x,from_date,to_date)
         #data = getStockDataByStockNo(x[0],from_date,to_date)
-        if data != None:
+        if data != False:
         #---
             if len(data) > 0 :
                 for i in data :

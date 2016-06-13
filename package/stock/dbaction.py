@@ -370,10 +370,12 @@ def insertSimpleDailyQuotes(record):
 
     try:
         trecord = tuple(record)
+        #---allen
         if curs.execute('''insert into simpledailyquotes values
-            (?,?,?,?,?,?,?,?)''', trecord):
+                (?,?,?,?,?,?,?,?)''', trecord):
             conn.commit()
-        dblog.info('建立資料成功(simpledailyquotes)：' + str(record))
+            dblog.info('建立資料成功(simpledailyquotes)：' + str(record))
+        #---
     except Exception:
         dblog.error(sys.exc_info())
         dblog.error(traceback.print_exc())
